@@ -39,7 +39,7 @@ app.post('/', async (c) => {
         embedding: body.embedding || ""
       }
     });
-    return c.json({ data })
+    return c.text(data.id);
   } catch (error) {
     return c.json({ error: (error as Error).message }, 500)
   }
