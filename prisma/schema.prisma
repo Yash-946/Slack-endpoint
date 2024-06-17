@@ -1,0 +1,30 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Meeting {
+  id                 String      @id @default(uuid())
+  meet_link          String
+  title              String
+  time               String
+  month              Int
+  year               Int
+  attendees          String
+  meeting_Agenda     String
+  Meeting_Highlights String
+  Meeting_Transcript String
+  meeting_summary    String
+  chunk_number       String
+  embedding          String
+}
