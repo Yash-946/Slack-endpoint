@@ -16,7 +16,6 @@ app.post('/input', async (c) => {
   const meeting_data = body.data || "";
   console.log(body);
   
-
   try {
     const data = await prisma.input.create({
       data:{
@@ -31,32 +30,39 @@ app.post('/input', async (c) => {
 }
 
 })
+
 app.post('/', async (c) => {
   const body = await c.req.json();
-  const filterdata = filterMeetingData(body.data.toString());
-  console.log(filterdata);
-  // try {
-  //   const data = await prisma.meeting.create({
-  //     data: {
-  //       meet_link: filterdata.meet_link || "",
-  //       title: filterdata.title || "",
-  //       time: filterdata.time || "",
-  //       month: parseInt(filterdata.month.toString()) || 0,
-  //       year: filterdata.year || 0,
-  //       attendees: filterdata.attendees || "",
-  //       meeting_Agenda: filterdata.meeting_Agenda || "",
-  //       Meeting_Highlights: filterdata.Meeting_Highlights || "",
-  //       Meeting_Transcript: filterdata.Meeting_Transcript || "",
-  //       meeting_summary: filterdata.meeting_summary || "",
-  //       chunk_number: filterdata.chunk_number || "",
-  //       embedding: filterdata.embedding || ""
-  //     }
-  //   });
-  //   return c.text(data.id);
-  // } catch (error) {
-  //   return c.json({ error: (error as Error).message }, 500)
-  // }
+
+  const gc_emails = body.emails || "";
+  const gc_time = body.time || "";
+  const filterdata = filterMeetingData(body.data.toString())!;
+  // console.log(filterdata);
+
+  try {
+    const data = await prisma.meeting.create({
+      data: {
+        Meet_link: filterdata.meet_link || "",
+        Title: filterdata.title || "",
+        Time: gc_time? gc_time:filterdata.time,
+        Month: parseInt(filterdata.month.toString()) || 0,
+        Year: filterdata.year || 0,
+        Full_Date: filterdata.full_date,
+        Attendees: filterdata.attendees || "",
+        Attendees_Emails: gc_emails? gc_emails:"",
+        Meeting_Agenda: filterdata.meeting_Agenda || "",
+        Meeting_Highlights: filterdata.Meeting_Highlights || "",
+        Meeting_Transcript: filterdata.Meeting_Transcript || "",
+        Meeting_summary: filterdata.meeting_summary || "",
+      }
+    });
+    return c.text(data.id);
+  } catch (error) {
+    return c.json({ error: (error as Error).message }, 500)
+  }
+
   return c.json({ filterdata });
+  
 })
 
 const port = 3000

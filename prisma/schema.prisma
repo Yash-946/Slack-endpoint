@@ -14,19 +14,23 @@ datasource db {
 }
 
 model Meeting {
-  id                 String @id @default(uuid())
-  meet_link          String
-  title              String
-  time               String
-  month              Int
-  year               Int
-  attendees          String
-  meeting_Agenda     String
-  Meeting_Highlights String
-  Meeting_Transcript String
-  meeting_summary    String
-  chunk_number       String
-  embedding          String
+  id                           String @id @default(uuid())
+  Meet_link                    String?
+  Title                        String?
+  Title_Embedding              Json?
+  Time                         String?
+  Month                        Int?
+  Year                         Int?
+  Full_Date                    String?
+  Attendees                    String?
+  Attendees_Emails             String?
+  Meeting_Agenda               String?
+  Meeting_Highlights           String?
+  Meeting_Transcript           String?
+  Meeting_Transcript_Embedding Json?
+  Meeting_summary              String?
+  Meeting_summary_Embedding    Json?
+  Chunk_number                 String?
 }
 
 model Input {
