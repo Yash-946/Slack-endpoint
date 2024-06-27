@@ -27,8 +27,8 @@ app.post('/input', async (c) => {
     })
     return c.json({data});
   } catch (error) {
-    return c.json({error});
-  }
+    return c.json({ error: (error as Error).message }, 500)
+}
 
 })
 app.post('/', async (c) => {
