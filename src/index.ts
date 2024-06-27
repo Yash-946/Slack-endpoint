@@ -14,6 +14,8 @@ app.post('/input', async (c) => {
   const gc_emails = body.emails || "";
   const gc_time = body.time || "";
   const meeting_data = body.data || "";
+  console.log(body);
+  
 
   try {
     const data = await prisma.input.create({
@@ -25,7 +27,7 @@ app.post('/input', async (c) => {
     })
     return c.json({data});
   } catch (error) {
-    return c.text("Some Error Ocurred");
+    return c.json({error});
   }
 
 })
