@@ -6,8 +6,6 @@
   "dependencies": {
     "@hono/node-server": "^1.11.3",
     "@prisma/client": "^5.15.0",
-    "axios": "^1.7.2",
-    "googleapis": "^140.0.0",
     "hono": "^4.4.6",
     "prisma": "^5.15.0",
     "uuid": "^10.0.0"

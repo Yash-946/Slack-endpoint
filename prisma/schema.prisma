@@ -14,7 +14,7 @@ datasource db {
 }
 
 model Meeting {
-  id                 String      @id @default(uuid())
+  id                 String @id @default(uuid())
   meet_link          String
   title              String
   time               String
@@ -27,4 +27,11 @@ model Meeting {
   meeting_summary    String
   chunk_number       String
   embedding          String
+}
+
+model Input {
+  id               String  @id @default(uuid())
+  GC_Emails        String?
+  GC_Time          String?
+  Meeting_Raw_Data String?
 }
