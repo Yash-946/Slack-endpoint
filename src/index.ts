@@ -76,7 +76,7 @@ app.post('/', async (c) => {
     return c.json({ error: (error as Error).message }, 500)
   }
 
-  return c.json({ data });
+  // return c.json({ data });
 
 })
 
