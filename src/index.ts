@@ -1,6 +1,11 @@
 import { serve } from '@hono/node-server'
 import { PrismaClient } from '@prisma/client'
 import { Hono } from 'hono'
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: "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",
+});
 
 const app = new Hono()
 const prisma = new PrismaClient()
@@ -38,16 +43,19 @@ app.post('/', async (c) => {
   const gc_time = body.time || "";
 
   console.log("Full Body", body);
-  
   console.log("Data",body.data);
 
   const filterdata = formatMeetingInput(body.data)!;
+  const title_embedding = await generateEmbedding(filterdata.title)
+  const summary_Embedding =  await generateEmbedding(filterdata.meeting_summary)
+  const transcript_Embedding = await generateEmbedding(filterdata.meeting_Transcript);
 
   try {
     const data = await prisma.meeting.create({
       data: {
         Meet_link: filterdata.meet_link || "",
         Title: filterdata.title || "",
+        Title_Embedding:{Embedding:title_embedding} || null,
         Time: gc_time ? gc_time : filterdata.time,
         Month: parseInt(filterdata.month.toString()) || 0,
         Year: filterdata.year || 0,
@@ -55,9 +63,11 @@ app.post('/', async (c) => {
         Attendees: filterdata.attendees || "",
         Attendees_Emails: gc_emails ? gc_emails : "",
         Meeting_Agenda: filterdata.meeting_Agenda || "",
-        Meeting_Highlights: filterdata.Meeting_Highlights || "",
-        Meeting_Transcript: filterdata.Meeting_Transcript || "",
+        Meeting_Highlights: filterdata.meeting_Highlights || "",
+        Meeting_Transcript: filterdata.meeting_Transcript || "",
+        Meeting_Transcript_Embedding:{Embedding:transcript_Embedding} || null,
         Meeting_summary: filterdata.meeting_summary || "",
+        Meeting_summary_Embedding:{Embedding:summary_Embedding} || null
       }
     });
     return c.text(data.id);
@@ -67,6 +77,24 @@ app.post('/', async (c) => {
 
   return c.json({ data });
 
+})
+
+app.post('/embedding', async (c) => {
+  const body = await c.req.json();
+  const text = body.embedding;
+  const data = await generateEmbedding(text);
+  const update = await prisma.meeting.update({
+    where:{id:'ad0e6a05-ec4b-4483-892c-be52a672d75f'},
+    data:{
+      Title_Embedding:{Embedding:data}
+    }
+  })
+  return c.json({update});
+})
+
+app.get('/alldata', async (c) => {
+  const alldata = await prisma.meeting.findMany({});
+  return c.json({alldata});
 })
 
 const port = 3000
@@ -122,8 +150,8 @@ function filterMeetingData(rawData: string) {
     full_date: `${year}-${month}-${day}`,
     attendees: attendeesMatch ? cleanString(attendeesMatch[1]) : "",
     meeting_Agenda: agendaMatch ? cleanString(agendaMatch[1]) : "",
-    Meeting_Highlights: highlightsMatch ? cleanString(highlightsMatch[1]) : "",
-    Meeting_Transcript: transcriptMatch ? cleanString(transcriptMatch[1]) : "",
+    meeting_Highlights: highlightsMatch ? cleanString(highlightsMatch[1]) : "",
+    meeting_Transcript: transcriptMatch ? cleanString(transcriptMatch[1]) : "",
     meeting_summary: summaryMatch ? cleanString(summaryMatch[1]) : "",
   };
 }
@@ -139,4 +167,13 @@ function convertUTCToIST(dateStr: string) {
   const time = istDateObj.toTimeString().split(' ')[0]; // HH:MM:SS
 
   return { year, month, day, time };
+}
+
+async function generateEmbedding(text:string) {
+  const response = await openai.embeddings.create({
+    input: text,
+    model: 'text-embedding-3-large', // Specify the model you want to use
+  });
+  console.log(response.data[0].embedding);
+  return response.data[0].embedding;
 }
