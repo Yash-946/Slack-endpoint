@@ -5,7 +5,7 @@ import OpenAI from 'openai';
 
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAPI_KEY,
+  apiKey: "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",
 });
 
 const app = new Hono()
@@ -47,6 +47,43 @@ app.post('/', async (c) => {
   console.log("Data",body.data);
 
   const filterdata = formatMeetingInput(body.data)!;
+
+  try {
+    const data = await prisma.meeting.create({
+      data: {
+        Meet_link: filterdata.meet_link || "",
+        Title: filterdata.title || "",
+        Time: gc_time ? gc_time : filterdata.time,
+        Month: parseInt(filterdata.month.toString()) || 0,
+        Year: filterdata.year || 0,
+        Full_Date: filterdata.full_date,
+        Attendees: filterdata.attendees || "",
+        Attendees_Emails: gc_emails ? gc_emails : "",
+        Meeting_Agenda: filterdata.meeting_Agenda || "",
+        Meeting_Highlights: filterdata.meeting_Highlights || "",
+        Meeting_Transcript: filterdata.meeting_Transcript || "",
+        Meeting_summary: filterdata.meeting_summary || "",
+      }
+    });
+    return c.text(data.id);
+  } catch (error) {
+    return c.json({ error: (error as Error).message }, 500)
+  }
+
+  // return c.json({ data });
+
+})
+
+app.post('/embedding', async (c) => {
+  const body = await c.req.json();
+
+  const gc_emails = body.emails || "";
+  const gc_time = body.time || "";
+
+  console.log("Full Body", body);
+  console.log("Data",body.data);
+
+  const filterdata = formatMeetingInput(body.data)!;
   const title_embedding = await generateEmbedding(filterdata.title)
   const summary_Embedding =  await generateEmbedding(filterdata.meeting_summary)
   const transcript_Embedding = await generateEmbedding(filterdata.meeting_Transcript);
@@ -75,22 +112,6 @@ app.post('/', async (c) => {
   } catch (error) {
     return c.json({ error: (error as Error).message }, 500)
   }
-
-  // return c.json({ data });
-
-})
-
-app.post('/embedding', async (c) => {
-  const body = await c.req.json();
-  const text = body.embedding;
-  const data = await generateEmbedding(text);
-  const update = await prisma.meeting.update({
-    where:{id:'ad0e6a05-ec4b-4483-892c-be52a672d75f'},
-    data:{
-      Title_Embedding:{Embedding:data}
-    }
-  })
-  return c.json({update});
 })
 
 app.get('/alldata', async (c) => {
