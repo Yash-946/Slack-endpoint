@@ -15,19 +15,19 @@ app.post('/input', async (c) => {
   const gc_time = body.time || "";
   const meeting_data = body.data || "";
   console.log(body);
-  
+
   try {
     const data = await prisma.input.create({
-      data:{
-        GC_Emails:gc_emails,
-        GC_Time:gc_time,
+      data: {
+        GC_Emails: gc_emails,
+        GC_Time: gc_time,
         Meeting_Raw_Data: meeting_data
       }
     })
-    return c.json({data});
+    return c.json({ data });
   } catch (error) {
     return c.json({ error: (error as Error).message }, 500)
-}
+  }
 
 })
 
@@ -36,20 +36,24 @@ app.post('/', async (c) => {
 
   const gc_emails = body.emails || "";
   const gc_time = body.time || "";
-  const filterdata = filterMeetingData(body.data.toString())!;
-  // console.log(filterdata);
+
+  console.log("Full Body", body);
+  
+  console.log("Data",body.data);
+
+  const filterdata = formatMeetingInput(body.data)!;
 
   try {
     const data = await prisma.meeting.create({
       data: {
         Meet_link: filterdata.meet_link || "",
         Title: filterdata.title || "",
-        Time: gc_time? gc_time:filterdata.time,
+        Time: gc_time ? gc_time : filterdata.time,
         Month: parseInt(filterdata.month.toString()) || 0,
         Year: filterdata.year || 0,
         Full_Date: filterdata.full_date,
         Attendees: filterdata.attendees || "",
-        Attendees_Emails: gc_emails? gc_emails:"",
+        Attendees_Emails: gc_emails ? gc_emails : "",
         Meeting_Agenda: filterdata.meeting_Agenda || "",
         Meeting_Highlights: filterdata.Meeting_Highlights || "",
         Meeting_Transcript: filterdata.Meeting_Transcript || "",
@@ -61,8 +65,8 @@ app.post('/', async (c) => {
     return c.json({ error: (error as Error).message }, 500)
   }
 
-  return c.json({ filterdata });
-  
+  return c.json({ data });
+
 })
 
 const port = 3000
@@ -73,7 +77,19 @@ serve({
   port
 })
 
- function filterMeetingData(rawData: string) {
+function formatMeetingInput(input:string) {
+  // Split the input into lines
+  const lines = input.split('\n');
+  
+  // Join all lines into a single string without newlines
+  const formattedOutput = lines.join('');
+
+  const filterdata = filterMeetingData(formattedOutput);
+  
+  return filterdata;
+}
+
+function filterMeetingData(rawData: string) {
   rawData = rawData.replace(/^\uFEFF/, ''); // Remove BOM
 
   const titleMatch = rawData.match(/Title: ([^\n]+)Location/);
@@ -109,8 +125,6 @@ serve({
     Meeting_Highlights: highlightsMatch ? cleanString(highlightsMatch[1]) : "",
     Meeting_Transcript: transcriptMatch ? cleanString(transcriptMatch[1]) : "",
     meeting_summary: summaryMatch ? cleanString(summaryMatch[1]) : "",
-    chunk_number: "",
-    embedding: "",
   };
 }
 
