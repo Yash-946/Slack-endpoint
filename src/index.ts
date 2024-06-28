@@ -5,7 +5,7 @@ import OpenAI from 'openai';
 
 
 const openai = new OpenAI({
-  apiKey: "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",
+  apiKey: process.env.OPENAPI_KEY,
 });
 
 const app = new Hono()
